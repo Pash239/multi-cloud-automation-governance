@@ -1,0 +1,40 @@
+---
+services:
+  frontend:
+    image: registry.example/frontend:1.0.0
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - frontend
+
+  middleware:
+    image: registry.example/middleware:1.0.0
+    user: "10001:10001"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - frontend
+      - backend
+
+  api:
+    image: registry.example/api:1.0.0
+    user: "10002:10002"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - backend
+
+networks:
+  frontend:
+    internal: false
+  backend:
+    internal: true

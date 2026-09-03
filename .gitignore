@@ -1,0 +1,25 @@
+# Secrets
+*.pem
+*.key
+*.p12
+*.vault
+.env
+.env.*
+
+# Ansible local/runtime
+*.retry
+ansible/.cache/
+
+# Terraform local state and credentials
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+!*.tfvars.example
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

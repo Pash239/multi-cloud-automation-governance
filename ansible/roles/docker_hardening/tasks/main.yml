@@ -1,0 +1,31 @@
+---
+- name: Ensure Docker configuration directory exists
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy approved Docker daemon configuration
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+  notify: Restart docker
+
+- name: Inspect Docker Unix socket
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_socket
+
+- name: Restrict Docker Unix socket permissions
+  ansible.builtin.file:
+    path: /var/run/docker.sock
+    owner: root
+    group: docker
+    mode: '0660'
+  when: docker_socket.stat.exists

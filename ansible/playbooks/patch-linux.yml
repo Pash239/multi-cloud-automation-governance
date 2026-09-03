@@ -1,0 +1,72 @@
+---
+- name: Canary-first rolling Linux security patching
+  hosts: production
+  become: true
+  gather_facts: true
+  serial: 5
+  max_fail_percentage: 0
+
+  pre_tasks:
+    - name: Verify minimum free space on root filesystem
+      ansible.builtin.assert:
+        that:
+          - ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_available') | first | int > 2147483648
+        fail_msg: "Less than 2 GiB free on root filesystem; stopping maintenance for this host"
+
+    - name: Confirm Docker is healthy before maintenance
+      ansible.builtin.command: docker info
+      changed_when: false
+
+  tasks:
+    - name: Apply approved security updates on Red Hat family
+      ansible.builtin.dnf:
+        name: '*'
+        state: latest
+        security: true
+      when: ansible_os_family == 'RedHat'
+
+    - name: Ensure unattended-upgrades is installed on Debian family
+      ansible.builtin.apt:
+        name: unattended-upgrades
+        state: present
+        update_cache: true
+      when: ansible_os_family == 'Debian'
+
+    - name: Apply distribution-configured unattended security updates on Debian family
+      ansible.builtin.command: unattended-upgrade --verbose
+      register: debian_security_updates
+      changed_when: "'Packages that will be upgraded:' in debian_security_updates.stdout"
+      when: ansible_os_family == 'Debian'
+
+    - name: Check whether reboot is required on Debian family
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: debian_reboot_required
+      when: ansible_os_family == 'Debian'
+
+    - name: Reboot Debian host when required
+      ansible.builtin.reboot:
+        reboot_timeout: 900
+      when:
+        - ansible_os_family == 'Debian'
+        - debian_reboot_required.stat.exists | default(false)
+
+  post_tasks:
+    - name: Ensure Docker service is available after maintenance
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Validate Docker responds after maintenance
+      ansible.builtin.command: docker info
+      changed_when: false
+
+    - name: Validate local application health after maintenance
+      ansible.builtin.uri:
+        url: http://127.0.0.1/health
+        status_code: 200
+      register: patch_health
+      retries: 6
+      delay: 10
+      until: patch_health.status == 200
