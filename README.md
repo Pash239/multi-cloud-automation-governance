@@ -40,6 +40,8 @@ The design preserves tenant isolation while introducing one operational control 
               Prometheus + Loki + Grafana
 ```
 
+The detailed architecture document contains GitHub-rendered Mermaid blueprints for the governance and change flows.
+
 ## Repository Structure
 
 ```text
@@ -66,9 +68,12 @@ The design preserves tenant isolation while introducing one operational control 
 │   ├── drift-management.md
 │   ├── patching-lifecycle.md
 │   ├── security-hardening.md
-│   └── observability.md
+│   ├── observability.md
+│   ├── toolchain-choice.md
+│   └── assumptions-and-boundaries.md
 ├── monitoring/
 ├── terraform/
+├── .github/workflows/ansible-syntax.yml
 ├── .gitignore
 └── README.md
 ```
@@ -110,6 +115,8 @@ The Ansible content demonstrates:
 - controlled container image reconciliation;
 - post-change host/container/application health validation.
 
+A GitHub Actions workflow syntax-checks the Ansible playbooks on relevant branch/PR changes.
+
 ## Design Guardrails
 
 - No secrets in Git.
@@ -128,6 +135,8 @@ The Ansible content demonstrates:
 - [Patching Lifecycle](docs/patching-lifecycle.md)
 - [Security Hardening](docs/security-hardening.md)
 - [Observability](docs/observability.md)
+- [Automation Toolchain Choice](docs/toolchain-choice.md)
+- [Assumptions and Boundaries](docs/assumptions-and-boundaries.md)
 - [AWX Workflow Design](awx/workflow-design.md)
 
 ## Purpose
