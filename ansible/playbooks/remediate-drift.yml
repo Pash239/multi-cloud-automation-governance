@@ -1,0 +1,25 @@
+---
+- name: Remediate approved low-risk configuration drift
+  hosts: all
+  become: true
+  gather_facts: true
+
+  roles:
+    - role: linux_baseline
+    - role: docker_hardening
+
+  post_tasks:
+    - name: Validate effective SSH configuration
+      ansible.builtin.command: sshd -T
+      register: sshd_effective
+      changed_when: false
+
+    - name: Confirm direct root SSH login remains disabled
+      ansible.builtin.assert:
+        that:
+          - "'permitrootlogin no' in sshd_effective.stdout"
+        fail_msg: "Post-remediation validation failed: PermitRootLogin is not disabled"
+
+    - name: Confirm Docker daemon is responsive
+      ansible.builtin.command: docker info
+      changed_when: false
