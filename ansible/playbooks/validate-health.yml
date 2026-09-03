@@ -1,0 +1,35 @@
+---
+- name: Validate tenant appliance health
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Ensure Docker daemon is running
+      ansible.builtin.service:
+        name: docker
+        state: started
+
+    - name: Get running containers
+      ansible.builtin.command: docker ps --format '{{ "{{" }}.Names{{ "}}" }}'
+      register: running_containers
+      changed_when: false
+
+    - name: Verify expected application containers are running
+      ansible.builtin.assert:
+        that:
+          - item in running_containers.stdout_lines
+        fail_msg: "Expected container {{ item }} is not running"
+      loop:
+        - frontend
+        - middleware
+        - api
+
+    - name: Validate local application health endpoint
+      ansible.builtin.uri:
+        url: http://127.0.0.1/health
+        status_code: 200
+        return_content: false
+      register: application_health
+      retries: 5
+      delay: 10
+      until: application_health.status == 200
