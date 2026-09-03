@@ -8,22 +8,18 @@ Because each tenant is hosted on a standalone VM, a reboot or Docker restart can
 
 ## Workflow
 
-```text
-Pre-checks
-   |
-Canary: 1-2 representative tenants
-   |
-OS / Docker / image update
-   |
-Health gate
- /       \
-FAIL     PASS
- |        |
-STOP     Next batch
- |        |
-Recover  Validate
-          |
-       Continue
+```mermaid
+flowchart LR
+    P[Pre-checks] --> C[Canary: 1–2 representative tenants]
+    C --> U[OS / Docker / image update]
+    U --> H{Health gate}
+    H -- Fail --> S[STOP rollout]
+    S --> R[Collect evidence / recover / roll back]
+    H -- Pass --> B[Next rolling batch]
+    B --> V[Validate]
+    V --> N{More batches?}
+    N -- Yes --> B
+    N -- No --> E[Complete and record evidence]
 ```
 
 ## 1. Pre-Checks
@@ -37,6 +33,8 @@ One or two representative hosts receive the change first. The workflow does not 
 ## 3. OS Security Patching
 
 Ansible applies approved security updates. Reboot occurs only when required. AWX/Ansible waits for the host to return and then validates the operating system, Docker and application stack.
+
+For Debian/Ubuntu-family hosts, the proof-of-concept invokes the distribution's `unattended-upgrade` mechanism. In production, its allowed origins must be explicitly aligned with the client's approved security repositories and patch policy before execution.
 
 ## 4. Docker Daemon Updates
 
