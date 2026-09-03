@@ -1,0 +1,40 @@
+---
+- name: Deploy approved container stack in controlled batches
+  hosts: production
+  become: true
+  gather_facts: false
+  serial: 5
+  max_fail_percentage: 0
+
+  vars:
+    compose_project_dir: /opt/acme
+    compose_file: docker-compose.yml
+
+  pre_tasks:
+    - name: Validate Docker before deployment
+      ansible.builtin.command: docker info
+      changed_when: false
+
+  tasks:
+    - name: Pull approved container images
+      ansible.builtin.command:
+        cmd: docker compose -f {{ compose_file }} pull
+        chdir: '{{ compose_project_dir }}'
+      register: image_pull
+      changed_when: "'Pulled' in image_pull.stdout or 'Downloaded' in image_pull.stdout"
+
+    - name: Reconcile stack to approved Compose definition
+      ansible.builtin.command:
+        cmd: docker compose -f {{ compose_file }} up -d --remove-orphans
+        chdir: '{{ compose_project_dir }}'
+      register: compose_up
+      changed_when: true
+
+    - name: Validate local application health endpoint
+      ansible.builtin.uri:
+        url: http://127.0.0.1/health
+        status_code: 200
+      register: health
+      retries: 6
+      delay: 10
+      until: health.status == 200
