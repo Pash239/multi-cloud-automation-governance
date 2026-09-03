@@ -8,22 +8,16 @@ Create a vendor-neutral management plane for 50 isolated Linux/Docker tenant app
 
 Git is the source of approved configuration. AWX synchronizes automation content from Git and provides inventory, credentials, RBAC, schedules, workflows and job history. Ansible executes configuration, compliance, patching and validation against the managed hosts.
 
-```text
- Git / Approved Desired State
-            |
-            v
-     AWX Control Plane
-  Inventory | RBAC | Schedules
-            |
-            v
-      Ansible Execution
-            |
-       Secure SSH
-     +------+------+------+
-     |             |      |
- Provider A    Provider B  Other Providers
-     |             |      |
- Linux/Docker tenant appliances
+```mermaid
+flowchart TB
+    G[Git\nApproved desired state] --> A[AWX Control Plane\nInventory • Credentials • RBAC • Schedules • Workflows]
+    A --> E[Ansible Execution\nConfiguration • Drift • Patching • Hardening]
+    E --> P1[Provider A\nLinux + Docker tenant VMs]
+    E --> P2[Provider B\nLinux + Docker tenant VMs]
+    E --> P3[Other Providers\nLinux + Docker tenant VMs]
+    P1 --> O[Open Observability Plane\nPrometheus • Loki/Alloy • Grafana]
+    P2 --> O
+    P3 --> O
 ```
 
 ## Connectivity
@@ -40,23 +34,13 @@ Credentials are stored in AWX or an integrated secrets platform, never in invent
 
 ## Change Flow
 
-```text
-Engineer change
-     |
-     v
-Git branch / review
-     |
-     v
-Approved baseline
-     |
-     v
-AWX project sync
-     |
-     v
-Controlled Ansible execution
-     |
-     v
-Validation + evidence
+```mermaid
+flowchart LR
+    C[Engineer change] --> B[Git branch / review]
+    B --> D[Approved baseline]
+    D --> S[AWX project sync]
+    S --> X[Controlled Ansible execution]
+    X --> V[Validation + evidence]
 ```
 
 ## Design Principle
