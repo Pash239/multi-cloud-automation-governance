@@ -8,28 +8,18 @@ Approved Linux, Docker and application-topology configuration is version-control
 
 AWX schedules Ansible compliance/check jobs across the inventory. Results are compared with the approved state and retained as execution evidence.
 
-```text
-Git baseline
-    |
-AWX scheduled check
-    |
-Ansible validation
-    |
-Drift detected?
-  /       \
-No        Yes
-|          |
-Record   Classify risk
-           |
-      +----+----+
-      |         |
-   Low risk   High risk
-      |         |
-Auto-remediate Approval/window
-      \         /
-        Verify
-          |
-       Record
+```mermaid
+flowchart TB
+    G[Git baseline] --> A[AWX scheduled compliance job]
+    A --> V[Ansible validation]
+    V --> D{Drift detected?}
+    D -- No --> C[Record compliant]
+    D -- Yes --> R{Risk classification}
+    R -- Low risk --> M[Auto-remediate approved controls]
+    R -- High risk / disruptive --> H[Approval or maintenance workflow]
+    M --> X[Verify desired state]
+    H --> X
+    X --> E[Record evidence]
 ```
 
 ## Drift Examples
