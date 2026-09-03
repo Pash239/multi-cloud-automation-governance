@@ -17,10 +17,15 @@
     backup: true
   notify: Restart docker
 
+- name: Inspect Docker Unix socket
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_socket
+
 - name: Restrict Docker Unix socket permissions
   ansible.builtin.file:
     path: /var/run/docker.sock
     owner: root
     group: docker
     mode: '0660'
-  when: ansible_facts.services['docker.service'] is defined
+  when: docker_socket.stat.exists
