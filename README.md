@@ -11,7 +11,7 @@ The design preserves tenant isolation while introducing one operational control 
 ## Technical Strategy
 
 - **Git** stores the approved desired state and change history.
-- **AWX** provides central inventory, credentials, RBAC, scheduling, workflows and execution evidence.
+- **AWX** provides central inventory, credentials, RBAC, scheduling, workflows, approval gates and execution evidence.
 - **Ansible** enforces Linux and Docker configuration, detects/remediates drift and orchestrates rolling maintenance.
 - **Terraform** is reserved for supporting infrastructure/bootstrap where appropriate.
 - **Prometheus, Loki and Grafana** provide provider-neutral observability.
@@ -45,13 +45,31 @@ The design preserves tenant isolation while introducing one operational control 
 ```text
 .
 ├── ansible/
-│   ├── inventories/
+│   ├── inventories/production/hosts.yml
 │   ├── playbooks/
-│   └── roles/
+│   │   ├── compliance-check.yml
+│   │   ├── remediate-drift.yml
+│   │   ├── patch-linux.yml
+│   │   ├── update-containers.yml
+│   │   └── validate-health.yml
+│   ├── roles/
+│   │   ├── linux_baseline/
+│   │   └── docker_hardening/
+│   ├── ansible.cfg
+│   └── requirements.yml
+├── awx/
+│   └── workflow-design.md
 ├── docker/
+│   └── compose-baseline.yml
 ├── docs/
+│   ├── architecture.md
+│   ├── drift-management.md
+│   ├── patching-lifecycle.md
+│   ├── security-hardening.md
+│   └── observability.md
 ├── monitoring/
 ├── terraform/
+├── .gitignore
 └── README.md
 ```
 
@@ -61,11 +79,13 @@ The design preserves tenant isolation while introducing one operational control 
 
 `Detect -> Classify -> Remediate -> Verify -> Record`
 
+AWX schedules compliance checks. Deterministic, approved low-risk drift can be remediated through the `linux_baseline` and `docker_hardening` roles. Potentially disruptive or suspicious drift is held for controlled remediation rather than blindly self-healed.
+
 ### Patching
 
 `Pre-check -> Canary -> Update -> Health Gate -> Rolling Batch -> Validate`
 
-A failed health gate stops wider rollout.
+A failed health gate stops wider rollout. AWX workflow gates provide orchestration around the Ansible batch controls.
 
 ### Hardening
 
@@ -76,6 +96,20 @@ Controls are applied at four layers:
 3. Containers
 4. Inter-container networks
 
+## Proof-of-Concept Automation
+
+The repository includes executable reference automation rather than pretending to contain the client's real production estate. Example IP addresses, registry names, image versions and health endpoints are placeholders and must be replaced with environment-specific values before execution.
+
+The Ansible content demonstrates:
+
+- scheduled compliance validation;
+- approved drift remediation;
+- Linux baseline enforcement;
+- Docker daemon hardening;
+- canary/rolling Linux patching;
+- controlled container image reconciliation;
+- post-change host/container/application health validation.
+
 ## Design Guardrails
 
 - No secrets in Git.
@@ -83,7 +117,9 @@ Controls are applied at four layers:
 - No Docker socket mounts into normal application containers.
 - Low-risk drift may be auto-remediated; high-risk changes require approval.
 - Canary-first maintenance limits blast radius.
+- A failed health gate stops wider rollout.
 - The design prevents concurrent fleet-wide downtime; it does not claim zero interruption for a standalone tenant VM that requires a reboot.
+- Environment-specific production values are not fabricated in this proof-of-concept.
 
 ## Documentation
 
@@ -92,6 +128,7 @@ Controls are applied at four layers:
 - [Patching Lifecycle](docs/patching-lifecycle.md)
 - [Security Hardening](docs/security-hardening.md)
 - [Observability](docs/observability.md)
+- [AWX Workflow Design](awx/workflow-design.md)
 
 ## Purpose
 
