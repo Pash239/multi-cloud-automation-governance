@@ -1,0 +1,26 @@
+---
+- name: Validate approved Linux and Docker baseline
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Confirm Docker service is enabled and running
+      ansible.builtin.service_facts:
+
+    - name: Assert Docker service state
+      ansible.builtin.assert:
+        that:
+          - "'docker.service' in ansible_facts.services"
+          - "ansible_facts.services['docker.service'].state == 'running'"
+        fail_msg: "Docker service is not in the approved running state"
+
+    - name: Read SSH daemon configuration
+      ansible.builtin.command: sshd -T
+      register: sshd_effective
+      changed_when: false
+
+    - name: Assert direct root SSH login is disabled
+      ansible.builtin.assert:
+        that:
+          - "'permitrootlogin no' in sshd_effective.stdout"
+        fail_msg: "SSH baseline drift detected: PermitRootLogin is not disabled"
