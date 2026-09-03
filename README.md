@@ -70,7 +70,8 @@ The detailed architecture document contains GitHub-rendered Mermaid blueprints f
 │   ├── security-hardening.md
 │   ├── observability.md
 │   ├── toolchain-choice.md
-│   └── assumptions-and-boundaries.md
+│   ├── assumptions-and-boundaries.md
+│   └── presentation-walkthrough.md
 ├── monitoring/
 ├── terraform/
 ├── .github/workflows/ansible-syntax.yml
@@ -138,6 +139,7 @@ A GitHub Actions workflow syntax-checks the Ansible playbooks on relevant branch
 - [Automation Toolchain Choice](docs/toolchain-choice.md)
 - [Assumptions and Boundaries](docs/assumptions-and-boundaries.md)
 - [AWX Workflow Design](awx/workflow-design.md)
+- [15-Minute Presentation Walkthrough](docs/presentation-walkthrough.md)
 
 ## Purpose
 
