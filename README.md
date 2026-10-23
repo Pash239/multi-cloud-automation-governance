@@ -1,5 +1,7 @@
 # Multi-Cloud Automation Governance
 
+Portfolio project demonstrating multi-cloud Linux automation, governance, security, patching, drift management and observability using Ansible, AWX, Terraform, Docker, Prometheus, Loki and Grafana.
+
 A vendor-neutral reference implementation for governing, hardening, patching and observing a distributed fleet of Linux virtual machines running Docker-based tenant workloads.
 
 ## Scenario
@@ -15,6 +17,19 @@ The design preserves tenant isolation while introducing one operational control 
 - **Ansible** enforces Linux and Docker configuration, detects/remediates drift and orchestrates rolling maintenance.
 - **Terraform** is reserved for supporting infrastructure/bootstrap where appropriate.
 - **Prometheus, Loki and Grafana** provide provider-neutral observability.
+
+## Skills Demonstrated
+
+- Linux systems automation and hardening
+- Ansible roles and operational playbooks
+- AWX workflow orchestration and governance
+- Terraform infrastructure/bootstrap patterns
+- Docker security and lifecycle management
+- Multi-cloud operational design
+- Patch orchestration and drift remediation
+- Monitoring, logging and observability
+- Git-based change control and CI validation
+- Production-oriented rollback and blast-radius thinking
 
 ## Architecture
 
@@ -71,7 +86,7 @@ The detailed architecture document contains GitHub-rendered Mermaid blueprints f
 │   ├── observability.md
 │   ├── toolchain-choice.md
 │   ├── assumptions-and-boundaries.md
-│   └── presentation-walkthrough.md
+│   └── architecture-walkthrough.md
 ├── monitoring/
 ├── terraform/
 ├── .github/workflows/ansible-syntax.yml
@@ -104,7 +119,7 @@ Controls are applied at four layers:
 
 ## Proof-of-Concept Automation
 
-The repository includes executable reference automation rather than pretending to contain the client's real production estate. Example IP addresses, registry names, image versions and health endpoints are placeholders and must be replaced with environment-specific values before execution.
+The repository includes executable reference automation The repository includes executable reference automation rather than pretending to represent a real production estate. Example IP addresses, registry names, image versions and health endpoints are placeholders and must be replaced with environment-specific values before execution.
 
 The Ansible content demonstrates:
 
@@ -139,8 +154,8 @@ A GitHub Actions workflow syntax-checks the Ansible playbooks on relevant branch
 - [Automation Toolchain Choice](docs/toolchain-choice.md)
 - [Assumptions and Boundaries](docs/assumptions-and-boundaries.md)
 - [AWX Workflow Design](awx/workflow-design.md)
-- [15-Minute Presentation Walkthrough](docs/presentation-walkthrough.md)
+- [Architecture Walkthrough](docs/architecture-walkthrough.md)
 
 ## Purpose
 
-This repository is a technical proof-of-concept and architecture reference showing how a Systems Automation Engineer could implement consistent multi-cloud governance for a Linux and Docker fleet without depending on one cloud provider's management stack.
+This repository is a technical proof-of-concept and architecture reference demonstrating a practical approach to consistent multi-cloud governance for Linux and Docker workloads without depending on a single cloud provider’s management stack.
